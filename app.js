@@ -4,12 +4,11 @@ let copySecondButton = document.getElementById("copyTextIconSecond");
 let changeButton = document.getElementById("changeButton");
 let firstLanguageButton = document.getElementById("firstLanguageSelection");
 let secondLanguageButton = document.getElementById("secondLanguageSelection");
-let allLanguagesArea = document.getElementById("allLanguagesArea");
-const firstLanguageSelection = document.getElementById("firstLanguageSelection");
-const secondLanguageSelection = document.getElementById("secondLanguageSelection");
 let languageModal = document.getElementById("languagesModal");
-let firstLanguageList = document.getElementById("firstLanguageList");
-let secondLanguageList = document.getElementById("secondLanguageList");
+let languageButtonList = document.getElementById("languageButtonList");
+let translateArea = document.getElementById("translateArea");
+let translateArea2 = document.getElementById("translateArea2");
+
 
 // Event Listeners
 copyFirstButton.addEventListener("click", copyText);
@@ -18,7 +17,8 @@ changeButton.addEventListener("click", changeSelections);
 firstLanguageButton.addEventListener("click", firstToggleModal);
 secondLanguageButton.addEventListener("click", secondToggleModal);
 document.addEventListener("DOMContentLoaded", loadPage);
-allLanguagesArea.addEventListener("click", pickLanguages);
+languageButtonList.addEventListener("click", pickLanguages);
+translateArea.addEventListener("focusout", apiPostTranslate)
 
 
 // Functions
@@ -30,11 +30,20 @@ function copyText(e) {
 }
 
 function changeSelections() {
-    localStorage.setItem("firstLang", firstLanguageSelection.textContent);
-    localStorage.setItem("secondLang", secondLanguageSelection.textContent);
+    localStorage.setItem("firstLang", firstLanguageButton.textContent);
+    localStorage.setItem("secondLang", secondLanguageButton.textContent);
 
-    secondLanguageSelection.textContent = localStorage.getItem("firstLang");
-    firstLanguageSelection.textContent = localStorage.getItem("secondLang");
+    secondLanguageButton.textContent = localStorage.getItem("firstLang");
+    firstLanguageButton.textContent = localStorage.getItem("secondLang");
+
+    source_name = secondLanguageButton.name;
+    target_name = firstLanguageButton.name;
+    firstLanguageButton.name = source_name;
+    secondLanguageButton.name = target_name;
+
+    translateArea.value = translateArea2.value;
+    translateArea2.value = "";
+    apiPostTranslate();
 }
 
 function loadPage() {
@@ -42,16 +51,16 @@ function loadPage() {
     // let langsFromApi = ["lorem", "lorem", "lorem", "lorem", "lorem", "lorem", "lorem", "lorem", "lorem", "lorem", "lorem", "lorem"];
 
     for (let i = 0; i < langsFromApi.length; i++) {
-        firstLanguageList.innerHTML += `
+        languageButtonList.innerHTML += `
             <div class="languages col-3">
-                <button id="firstId" name="` + langsFromApi[i].code + `" style="border: none; background-color: inherit;" class="languagesAllButtons btn-default firstLangsContent">` + langsFromApi[i].name+`</button>
+                <button name="` + langsFromApi[i].code + `" style="border: none; background-color: inherit;" class="languagesAllButtons btn-default">` + langsFromApi[i].name + `</button>
             </div>
         `
-        secondLanguageList.innerHTML += `
-            <div class="languages col-3">
-                <button id="secondId" name="` + langsFromApi[i].code+ `" style="border: none; background-color: inherit;" class="languagesAllButtons btn-default secondLangsContent">` + langsFromApi[i].name+  `</button>
-            </div>
-        `
+        // secondLanguageList.innerHTML += `
+        //     <div class="languages col-3">
+        //         <button id="secondId" name="` + langsFromApi[i].code+ `" style="border: none; background-color: inherit;" class="languagesAllButtons btn-default secondLangsContent">` + langsFromApi[i].name+  `</button>
+        //     </div>
+        // `
     }
     lastUsedLang();
 }
@@ -70,32 +79,42 @@ function apiGetLanguages() {
     return response;
 }
 
+// function fadeInAndOut(thz) {
+//     var elmt = thz.nextElementSibling;//Get the element that is below the button that
+//     //was just clicked
+//
+//     elmt.classList.toggle("acordianPanelHidden");//Toggle the class which changes
+//     //attributes which triggers the `transition` CSS
+// }
+
+
+let clickedSelectButton = "";
 
 function firstToggleModal() {
-    if (!secondLanguageList.classList.contains("d-none")) {
-        secondLanguageList.classList.add("d-none")
+    languageModal.classList.toggle("languageListHidden");
+    if (clickedSelectButton === "second") {
+        setTimeout(function () {
+            languageModal.classList.toggle("languageListHidden");
+        }, 300)
     }
-
-    if (firstLanguageList.classList.contains("d-none")) {
-        firstLanguageList.classList.remove("d-none");
-        languageModal.classList.remove("d-none");
+    if (languageModal.classList.contains("languageListHidden")) {
+        clickedSelectButton = "";
     } else {
-        firstLanguageList.classList.add("d-none");
-        languageModal.classList.add("d-none");
+        clickedSelectButton = "first";
     }
 }
 
 function secondToggleModal() {
-    if (!firstLanguageList.classList.contains("d-none")) {
-        firstLanguageList.classList.add("d-none")
+    languageModal.classList.toggle("languageListHidden");
+    if (clickedSelectButton === "first") {
+        setTimeout(function () {
+            languageModal.classList.toggle("languageListHidden");
+        }, 300)
     }
-
-    if (secondLanguageList.classList.contains("d-none")) {
-        secondLanguageList.classList.remove("d-none");
-        languageModal.classList.remove("d-none");
+    if (languageModal.classList.contains("languageListHidden")) {
+        clickedSelectButton = "";
     } else {
-        secondLanguageList.classList.add("d-none");
-        languageModal.classList.add("d-none");
+        clickedSelectButton = "second";
     }
 }
 
@@ -109,15 +128,17 @@ function pickLanguages(e) {
         pickedLanguageButton = e.target;
     }
 
-    if (pickedLanguageButton.classList.contains("firstLangsContent")) {
+    if (clickedSelectButton === "first") {
         firstLanguageButton.textContent = pickedLanguageButton.textContent;
+        firstLanguageButton.name = pickedLanguageButton.name;
         firstToggleModal();
-    } else if (pickedLanguageButton.classList.contains("secondLangsContent")) {
+    } else if (clickedSelectButton === "second") {
         secondLanguageButton.textContent = pickedLanguageButton.textContent;
+        secondLanguageButton.name = pickedLanguageButton.name;
         secondToggleModal();
     }
-    let firstSelectionText = firstLanguageSelection.textContent;
-    let secondSelectionText = secondLanguageSelection.textContent;
+    let firstSelectionText = firstLanguageButton.textContent;
+    let secondSelectionText = secondLanguageButton.textContent;
     localStorage.setItem("firstLang", firstSelectionText);
     localStorage.setItem("secondLang", secondSelectionText);
 
@@ -142,6 +163,7 @@ function pickLanguages(e) {
 
     localStorage.setItem("lastLang", JSON.stringify(readLastLangs));
     lastUsedLang();
+    apiPostTranslate();
 }
 
 function lastUsedLang() {
@@ -162,27 +184,34 @@ function lastUsedLang() {
     }
 }
 
-let translateArea= document.getElementById("translateArea");
-let translateArea2= document.getElementById("translateArea2");
-
-translateArea.addEventListener("keyup", apiPostTranslate)
-
-
 function apiPostTranslate() {
-    translateArea2.value= translateArea.value;
-    console.log(translateArea.value);
+    const url = "http://localhost:5000/translate";
+    const data = {
+        q: translateArea.value,
+        source: firstLanguageButton.name,
+        target: secondLanguageButton.name,
+    }
+    fetch(url, {
+        method: "POST",
+        body: JSON.stringify(data),
+        headers: {
+            'Content-Type': 'application/json'
+            // 'Content-Type': 'application/x-www-form-urlencoded',
+        },
+    }).then(
+        response => response.json() // .json(), etc.
+        // same as function(response) {return response.text();}
+    ).then(
+        response => {
+            console.log('response', response);
+            if (response.error) {
+                console.log(response.error);
 
-        let response = [];
-        const xhr = new XMLHttpRequest();
-        let params= "q=hello&source=en&target=tr"
-        xhr.open("POST", "http://localhost:5000/translate", false);
-        xhr.onload = function () {
-            if (this.status) {
-                response = JSON.parse(this.responseText);
+            } else {
+                translateArea2.value = response.translatedText;
             }
         }
-        xhr.send(params);
-        return response;
-
+    ).catch((e) => {
+        console.log('Error occurred.');
+    });
 }
-
