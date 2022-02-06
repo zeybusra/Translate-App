@@ -79,15 +79,6 @@ function apiGetLanguages() {
     return response;
 }
 
-// function fadeInAndOut(thz) {
-//     var elmt = thz.nextElementSibling;//Get the element that is below the button that
-//     //was just clicked
-//
-//     elmt.classList.toggle("acordianPanelHidden");//Toggle the class which changes
-//     //attributes which triggers the `transition` CSS
-// }
-
-
 let clickedSelectButton = "";
 
 function firstToggleModal() {
@@ -196,11 +187,9 @@ function apiPostTranslate() {
         body: JSON.stringify(data),
         headers: {
             'Content-Type': 'application/json'
-            // 'Content-Type': 'application/x-www-form-urlencoded',
         },
     }).then(
-        response => response.json() // .json(), etc.
-        // same as function(response) {return response.text();}
+        response => response.json()
     ).then(
         response => {
             console.log('response', response);
