@@ -8,3 +8,10 @@ This is a practice app which includes API connections, Javascript and CSS
 - Bootstrap is used for design.
 - There are several functions are created such as copy text, switch languages, last used languages...
 - LocalStorage is used for last used languages.
+
+
+![Translate App](https://github.com/zeybusra/Translate-App/blob/main/Translate_1.jpg?raw=true)
+
+
+![Translate App](https://github.com/zeybusra/Translate-App/blob/main/Translate_2.jpg?raw=true)
+
